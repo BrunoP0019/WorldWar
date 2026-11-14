@@ -79,8 +79,9 @@ function SimNaval.install(C)
 	-- Transports
 	-- =========================================================================================
 
-	-- Boat intent: carry `ratio` of home troops to coastal tile `t` and attack from the beachhead.
-	function C:launch_boat(id: number, t: number, ratio: number): boolean
+	-- Boat intent: carry `ratio` of home troops to coastal tile `t` and attack from the beachhead
+	-- in `stance` (Defs.STANCE_*, default standard).
+	function C:launch_boat(id: number, t: number, ratio: number, stance: number?): boolean
 		-- Cheap rejections first; the coast scan and path search are budgeted per owner.
 		if not Defs.is_finite(ratio) or t < 0 or t >= self.N then
 			return false
@@ -145,6 +146,7 @@ function SimNaval.install(C)
 		u.start_tick = tick
 		u.tpt = self.R.TRANSPORT_TPT_X100
 		u.troops = troops
+		u.stance = stance or 0
 		u.target_tile = t
 		u.body = water_body
 		u.end_tick = tick + ((#path - 1) * u.tpt + 99) // 100
@@ -224,7 +226,7 @@ function SimNaval.install(C)
 			self:msg(id, Defs.MSG_GOOD, "Your transport landed")
 		end
 		-- With nothing to push into, start_attack sends the troops home.
-		self:start_attack(id, tg, troops, t)
+		self:start_attack(id, tg, troops, t, u.stance)
 	end
 
 	-- Overridden by Sim: may `id`'s landing start an attack on `tg` right now?

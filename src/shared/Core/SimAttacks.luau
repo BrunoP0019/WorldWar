@@ -91,8 +91,12 @@ function SimAttacks.new_attack(): any
 		frozen_from = 0,
 		--- Troops of a new order on the same target, absorbed at the end of the tick.
 		pend = 0.0,
+		--- The stance that order named.
+		pend_stance = 0,
 		--- Started while the target was attacking us (a counter-attack, not a declaration of war).
 		counter = false,
+		--- Defs.STANCE_*: the stance of the last order on this target (see Rules.STANCE_LOSS).
+		stance = 0,
 		dead = false,
 	}
 end
@@ -477,8 +481,21 @@ function SimAttacks.install(C: any)
 	--- Commits `troops` (already removed from the attacker's home troops) against `target`.
 	--- `beachhead` >= 0 seeds from that tile only (boat landings). Returns the attack or nil; on
 	--- nil the troops have been returned (or spent cancelling an opposing attack).
-	function C.start_attack(self: any, attacker: number, target: number, troops: number, beachhead: number?): any?
+	--- `stance` (Defs.STANCE_*, default standard) is the attack's from now on: a new order on a
+	--- running attack changes its stance at once (at the end of the tick for a merged order).
+	function C.start_attack(
+		self: any,
+		attacker: number,
+		target: number,
+		troops: number,
+		beachhead: number?,
+		stance: number?
+	): any?
 		local bh = beachhead or -1
+		local st = stance or 0
+		if st ~= 1 and st ~= 2 then
+			st = 0
+		end
 		local o_troops = self.o_troops
 		if troops < 1.0 then
 			o_troops[attacker] += troops
@@ -507,6 +524,7 @@ function SimAttacks.install(C: any)
 				-- A boat landing joins the running attack with its beachhead's neighbours (one attack
 				-- per attacker and target).
 				a.troops += troops
+				a.stance = st
 				a.retreat_at = 0
 				a.frozen_from = 0
 				_add_neighbors(self, a, bh)
@@ -515,6 +533,7 @@ function SimAttacks.install(C: any)
 				-- Two orders in one tick: both attacks start at the end of it, the second absorbs
 				-- the first.
 				a.troops += troops
+				a.stance = st
 				_seed_from_border(self, a)
 				self:_send_attack(a)
 			else
@@ -524,6 +543,7 @@ function SimAttacks.install(C: any)
 					table.insert(self._merges, a)
 				end
 				a.pend += troops
+				a.pend_stance = st
 			end
 			return a
 		end
@@ -535,6 +555,7 @@ function SimAttacks.install(C: any)
 		a.troops = troops
 		a.started_tick = self.tick
 		a.counter = counter
+		a.stance = st
 		if bh >= 0 then
 			_add_neighbors(self, a, bh)
 			a.last_tile = bh
@@ -599,7 +620,7 @@ function SimAttacks.install(C: any)
 	function C._send_attack(self: any, a: any)
 		local tr = Defs.trunc(a.troops)
 		a.sent_troops = tr
-		self:ev({ Ev.ATTACK, a.aid, a.attacker, a.target, tr, a.last_tile, a.retreat_at > 0 })
+		self:ev({ Ev.ATTACK, a.aid, a.attacker, a.target, tr, a.last_tile, a.retreat_at > 0, a.stance })
 	end
 
 	--- Ends an attack. Surviving troops return home multiplied by `keep` (default 1) when `give_back`
@@ -722,10 +743,11 @@ function SimAttacks.install(C: any)
 				continue
 			end
 			if a.dead then
-				self:start_attack(a.attacker, a.target, troops, -1)
+				self:start_attack(a.attacker, a.target, troops, -1, a.pend_stance)
 				continue
 			end
 			a.troops += troops
+			a.stance = a.pend_stance
 			a.retreat_at = 0
 			a.frozen_from = 0
 			_seed_from_border(self, a)
@@ -796,6 +818,9 @@ function SimAttacks.install(C: any)
 		local ATTACK_MAG = Rules.ATTACK_MAG
 		local ATTACK_TILE_COST = Rules.ATTACK_TILE_COST
 		local border1 = math.max(border_of, 1.0)
+		local stance = a.stance
+		local st_loss = Rules.STANCE_LOSS[stance]
+		local st_time = Rules.STANCE_TIME[stance]
 		local dbg_flow = self.dbg_flow
 		local cap = R.MAX_TILES_PER_TICK
 		local budget = 1.0
@@ -865,6 +890,10 @@ function SimAttacks.install(C: any)
 				local r20 = ratio / 20.0
 				local c2 = if r20 < 1.0 then 1.0 elseif r20 > 50.0 then 50.0 else r20
 				tf = c1 * c2 * tc * bonus_s * trait_s
+			end
+			if stance ~= 0 then
+				loss *= st_loss
+				tf *= st_time
 			end
 			if tf < 1e-6 then
 				tf = 1e-6
@@ -1057,7 +1086,8 @@ function SimAttacks.install(C: any)
 		local out = {}
 		for _, a in self.attacks do
 			if not a.dead then
-				out[#out + 1] = { a.aid, a.attacker, a.target, Defs.trunc(a.troops), a.last_tile, a.retreat_at > 0 }
+				out[#out + 1] =
+					{ a.aid, a.attacker, a.target, Defs.trunc(a.troops), a.last_tile, a.retreat_at > 0, a.stance }
 			end
 		end
 		return out

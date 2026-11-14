@@ -155,8 +155,9 @@ function Unit.new(): Unit
 		end_tick = 0,
 		-- Next tick at which this unit needs any processing (arrival, truck stop, warship turn).
 		next_tick = 0,
-		-- transports
+		-- transports (stance: Defs.STANCE_* of the attack the landing starts)
 		target_tile = -1,
+		stance = 0,
 		-- trade ships
 		src_sid = 0,
 		dst_sid = 0,

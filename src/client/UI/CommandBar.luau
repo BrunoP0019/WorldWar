@@ -88,6 +88,9 @@ function CommandBar.new(c: any)
 	self.panel = GlassPanel.new(18.0, 12.0, UITheme.R_LG, true, 22)
 	self:add_child(self.panel)
 	self:_build_sections()
+	self:_connect(c.stance_changed:Connect(function(_s)
+		self:_refresh_ratio()
+	end))
 	self:_connect(c.ratio_changed:Connect(function(_r)
 		self:_refresh_ratio()
 	end))
@@ -167,6 +170,10 @@ function CommandBar._build_sections(self)
 	local rr = T.hbox(6)
 	rr:add_child(T.icon_rect("attack", 12.0, T.TEXT_3))
 	rr:add_child(T.caption("Attack"))
+	-- The stance of the orders sent (UICtx.stance): a click moves to the next one (R does too).
+	self._stance = T.caption("Normal")
+	self:_stance_target(self._stance)
+	rr:add_child(self._stance)
 	rr:add_child(spacer())
 	self._ratio_pct = T.label("35%", 13, 800, T.AMBER)
 	rr:add_child(self._ratio_pct)
@@ -189,6 +196,8 @@ function CommandBar._build_sections(self)
 	self._ratio_sends = T.label("", 13, 700, T.TEXT)
 	self._ratio_sends.horizontal_alignment = W.ALIGN_RIGHT
 	self._ratio_inline_box:add_child(self._ratio_sends)
+	-- (phones: the readout is the stance's tap target; its caption names a stance that isn't standard)
+	self:_stance_target(self._ratio_inline_box)
 	line:add_child(self._ratio_inline_box)
 	self._ratio_line = line
 	self._ratio_box:add_child(line)
@@ -912,9 +921,32 @@ function CommandBar.button(self, kind: string)
 	return self.buttons[kind]
 end
 
+--- Makes `c` a click / tap target that moves the Attack stance on (UICtx.cycle_stance).
+function CommandBar._stance_target(self, c)
+	c:set_mouse_filter(W.MOUSE_STOP)
+	self:_connect(c.gui.InputBegan:Connect(function(io: InputObject)
+		local t = io.UserInputType
+		if t == Enum.UserInputType.MouseButton1 or t == Enum.UserInputType.Touch then
+			self.ctx:cycle_stance()
+			self.ctx:sfx("click", -10.0)
+		end
+	end))
+end
+
+--- The colour a stance is written in: blitz orange, siege cyan, standard `plain`.
+function CommandBar._stance_color(stance: number, plain: any): any
+	local T = UITheme
+	return if stance == 1 then T.ORANGE elseif stance == 2 then T.CYAN else plain
+end
+
 function CommandBar._refresh_ratio(self)
 	local ctx = self.ctx
 	local T = UITheme
+	local stance = ctx.stance or 0
+	self._stance:set_text(string.upper(UICtx.STANCE_TITLES[stance]))
+	self._stance:set_color(CommandBar._stance_color(stance, T.TEXT_3))
+	self._ratio_inline:set_text(if stance == 0 then "Sends" else UICtx.STANCE_TITLES[stance])
+	self._ratio_inline:set_color(CommandBar._stance_color(stance, T.TEXT_3))
 	local pct = math.floor(ctx.ratio * 100 + 0.5)
 	self._ratio_pct:set_text(string.format("%d%%", pct))
 	self._ratio_sends:set_text(T.fmt_troops(ctx:troops_for_ratio()))

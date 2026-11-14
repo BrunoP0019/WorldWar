@@ -640,6 +640,14 @@ local function build(K_LIN: number): any
 	--- attack / boat intent carries no ratio.
 	Rules.DEFAULT_ATTACK_RATIO = 0.2
 
+	--- Attack stances: how an attack trades troops for time. An order names one (intent `kind`:
+	--- "blitz" / "siege", none: standard) and the attack keeps it until a new order on the same
+	--- target names another. Index = Defs.STANCE_*: STANCE_LOSS multiplies the attacker's troop
+	--- loss per tile, STANCE_TIME the time a tile takes. Blitz takes land in 0.6 of the time for
+	--- 1.4 times the troops; siege takes 1.6 times as long for 0.65 of the troops. The defender's
+	--- own losses per tile are the same in every stance.
+	Rules.STANCE_LOSS = zt({ 1.0, 1.4, 0.65 })
+	Rules.STANCE_TIME = zt({ 1.0, 0.6, 1.6 })
 	local LOG_MID = math.log(300000.0)
 
 	--- largeTerritoryBonus: logistic in log(full-size tiles), ~1 for small, 1 - depth for huge territories.

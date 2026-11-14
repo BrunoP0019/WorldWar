@@ -955,9 +955,10 @@ function Sim._apply_intent(self: any, id: number, it: { [string]: any })
 		return
 	end
 	if kind == "attack" then
-		self:intent_attack(id, tile, _num(it, "ratio", Rules.DEFAULT_ATTACK_RATIO))
+		-- `kind`: the stance ("blitz" / "siege"; none: standard), as for a boat
+		self:intent_attack(id, tile, _num(it, "ratio", Rules.DEFAULT_ATTACK_RATIO), Defs.stance_from_name(it.kind))
 	elseif kind == "boat" then
-		self:launch_boat(id, tile, _num(it, "ratio", Rules.DEFAULT_ATTACK_RATIO))
+		self:launch_boat(id, tile, _num(it, "ratio", Rules.DEFAULT_ATTACK_RATIO), Defs.stance_from_name(it.kind))
 	elseif kind == "build" then
 		-- `amount`: a bulk upgrade (level after level, each at the
 		-- next price, until one can't be afforded); only ever more than one level on an existing
@@ -1285,17 +1286,18 @@ function Sim._median_nation_troops(self: any): number
 end
 
 --- Attack intent (also used by the AI). True when troops were committed.
-function Sim.intent_attack(self: any, id: number, t: number, ratio: number): boolean
+--- `stance`: Defs.STANCE_* (default standard).
+function Sim.intent_attack(self: any, id: number, t: number, ratio: number, stance: number?): boolean
 	if not Defs.is_finite(ratio) then
 		return false
 	end
 	-- The client sends a ratio: that share of current troops attacks.
-	return self:intent_attack_troops(id, t, self.o_troops[id] * math.clamp(ratio, 0.01, 1.0))
+	return self:intent_attack_troops(id, t, self.o_troops[id] * math.clamp(ratio, 0.01, 1.0), stance)
 end
 
 --- An attack with `amount` troops (as the AI sends it).
 --- True when troops were committed.
-function Sim.intent_attack_troops(self: any, id: number, t: number, amount: number): boolean
+function Sim.intent_attack_troops(self: any, id: number, t: number, amount: number, stance: number?): boolean
 	if t < 0 or t >= self.N or buffer.readu8(self.land, t) == 0 or not Defs.is_finite(amount) then
 		return false
 	end
@@ -1323,7 +1325,7 @@ function Sim.intent_attack_troops(self: any, id: number, t: number, amount: numb
 	end
 	o_troops[id] -= troops
 	self.dbg_flow[id * 5] += troops
-	local a = self:start_attack(id, tg, troops, -1)
+	local a = self:start_attack(id, tg, troops, -1, stance)
 	if a == nil and o_troops[id] >= home - 0.5 then
 		-- Refunded: there is no frontier (troops spent cancelling a counter-attack are not refunded).
 		if tg ~= 0 then

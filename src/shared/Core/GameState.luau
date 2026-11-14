@@ -1435,7 +1435,7 @@ function GameState._set_attack(self: GameState, args: { any }, o: number)
 	local aid = args[o + 1]
 	local at = self.attacks[aid]
 	if at == nil then
-		at = { aid = aid, attacker = 0, target = 0, troops = 0, anchor_tile = -1, retreating = false }
+		at = { aid = aid, attacker = 0, target = 0, troops = 0, anchor_tile = -1, retreating = false, stance = 0 }
 		self.attacks[aid] = at
 	end
 	at.attacker = args[o + 2]
@@ -1443,6 +1443,8 @@ function GameState._set_attack(self: GameState, args: { any }, o: number)
 	at.troops = args[o + 4]
 	at.anchor_tile = args[o + 5]
 	at.retreating = args[o + 6] == true
+	-- (Defs.STANCE_*; a row without it is a standard attack)
+	at.stance = tonumber(args[o + 7]) or 0
 end
 
 function GameState._recount_tiles(self: GameState)

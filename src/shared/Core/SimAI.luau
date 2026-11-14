@@ -480,7 +480,7 @@ function SimAI:_defend(sim, id: number): boolean
 		return false
 	end
 	local ratio = math.clamp(worst.troops * 1.25 / math.max(mine, 1.0), 0.05, 0.4)
-	return sim:intent_attack(id, tile, ratio)
+	return sim:intent_attack(id, tile, ratio, SimAI.war_stance(sim, id, x, ratio * mine))
 end
 
 function SimAI:_consider_war(sim, id: number, fill: number, age: number): boolean
@@ -563,7 +563,7 @@ function SimAI:_consider_war(sim, id: number, fill: number, age: number): boolea
 			return false
 		end
 	end
-	local ok = sim:intent_attack(id, sim.sc_tile[best], ratio)
+	local ok = sim:intent_attack(id, sim.sc_tile[best], ratio, SimAI.war_stance(sim, id, best, ratio * mine))
 	if ok and new_war then
 		attackers_on[best] += 1
 	end
@@ -1381,6 +1381,27 @@ function SimAI:_tribe_incoming(sim, id: number): number
 		best = a.attacker
 	end
 	return best
+end
+
+--- The stance (Defs.STANCE_*) a nation's land attack on player `target` takes when it sends
+--- `sending` troops: a blitz with STANCE_BLITZ_OVER times the target's army at home or more (the
+--- land falls before anyone else moves in, and the troops can be spared), a siege when the target's
+--- army is STANCE_SIEGE_UNDER of what is sent or more (an even fight: spend troops slowly), else
+--- standard. Novice bot players and tribes always attack in the standard stance, and so does every
+--- attack on free land.
+SimAI.STANCE_BLITZ_OVER = 3.0
+SimAI.STANCE_SIEGE_UNDER = 0.9
+function SimAI.war_stance(sim, id: number, target: number, sending: number): number
+	if target <= 0 or sim.o_kind[id] == KIND_TRIBE or sim:is_novice_bot(id) then
+		return 0
+	end
+	local theirs = math.max(sim.o_troops[target], 0.0)
+	if sending >= theirs * SimAI.STANCE_BLITZ_OVER then
+		return 1
+	elseif theirs >= sending * SimAI.STANCE_SIEGE_UNDER then
+		return 2
+	end
+	return 0
 end
 
 --- True when owner `p` holds any structure.

@@ -53,6 +53,11 @@ UICtx.RATIO_STOPS = { 0.10, 0.25, 0.35, 0.50, 0.75 }
 --- Attack ratio before the player sets one: the stop beside 20 % (it was
 --- 20% while the slider had no stops).
 UICtx.DEFAULT_RATIO = 0.25
+--- Attack stances by Defs.STANCE_* (the name an intent's `kind` carries, the title shown, and what
+--- the stance does in a few words; the numbers are Rules.STANCE_TIME / STANCE_LOSS).
+UICtx.STANCE_NAMES = { [0] = "standard", "blitz", "siege" }
+UICtx.STANCE_TITLES = { [0] = "Normal", "Blitz", "Siege" }
+UICtx.STANCE_HINTS = { [0] = "normal speed and losses", "faster, loses more troops", "slower, loses fewer troops" }
 
 --- Logical SFX ids -> file names in assets/audio/sfx (one place to remap).
 UICtx.SFX = {
@@ -353,6 +358,8 @@ function UICtx.new()
 	self.state_bound = Signal.new()
 	self.layout_changed = Signal.new()
 	self.ratio_changed = Signal.new()
+	--- the Attack stance changed (Defs.STANCE_*)
+	self.stance_changed = Signal.new()
 	--- an order was held back by troop_floor: trimmed to what may go, or not sent (UIAdvisor says why)
 	self.floor_held = Signal.new()
 	self.local_changed = Signal.new()
@@ -423,6 +430,9 @@ function UICtx.new()
 	self:_load_settings()
 	-- (the Attack slider is not a saved setting any more: every match starts at DEFAULT_RATIO)
 	self.ratio = UICtx.DEFAULT_RATIO
+	--- The stance every attack and boat order is sent in (Defs.STANCE_*: 0 standard, 1 blitz,
+	--- 2 siege; Rules.STANCE_LOSS / STANCE_TIME). Every match starts standard.
+	self.stance = 0
 	UICtx.prime()
 	return self
 end
@@ -783,6 +793,11 @@ function UICtx.send(self: any, intent: { [string]: any })
 			return
 		end
 		intent.ratio = share
+	end
+	-- an attack or a boat goes in the stance chosen on the Attack bar (the intent's `kind`; none:
+	-- standard), unless whoever built the order named one
+	if (intent.type == "attack" or intent.type == "boat") and intent.kind == nil and (self.stance or 0) ~= 0 then
+		intent.kind = UICtx.STANCE_NAMES[self.stance]
 	end
 	table.insert(self.sent_log, { msec = UICtx.msec(), intent = intent })
 	if #self.sent_log > 64 then
@@ -1222,6 +1237,22 @@ end
 --- the next match, and the next session.
 function UICtx.reset_ratio(self: any)
 	self:set_ratio(UICtx.DEFAULT_RATIO)
+	self:set_stance(0)
+end
+
+--- The Attack stance (Defs.STANCE_*) of the orders sent from now on; anything else is standard.
+function UICtx.set_stance(self: any, stance: number)
+	local v = if stance == 1 or stance == 2 then stance else 0
+	if v == self.stance then
+		return
+	end
+	self.stance = v
+	self.stance_changed:Fire(v)
+end
+
+--- The next stance: standard, blitz, siege, standard… (the R key, a click on the stance).
+function UICtx.cycle_stance(self: any)
+	self:set_stance(((self.stance or 0) + 1) % 3)
 end
 
 --- Troops sent by an attack at the current ratio.

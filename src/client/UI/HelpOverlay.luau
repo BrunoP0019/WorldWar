@@ -217,7 +217,7 @@ HelpOverlay.SECTIONS = {
 		icon = "attack",
 		color = "orange",
 		title = "Expand & attack",
-		text = "Click neutral land beside you to expand, or a nation you border to attack it. The Attack bar sets the share of troops you send (Q / E, or Shift + wheel). Troops regrow on their own, fastest well below your cap.",
+		text = "Click neutral land beside you to expand, or a nation you border to attack it. The Attack bar sets the share of troops you send (Q / E, or Shift + wheel). Troops regrow on their own, fastest well below your cap. Your stance (R, or click it on the Attack bar) sets the pace: Blitz takes land faster but loses more troops, Siege is slower and loses fewer.",
 	},
 	{
 		icon = "boat",
@@ -284,6 +284,7 @@ HelpOverlay.KEYS_DESKTOP = {
 	{ "Wheel / + −", "Zoom" },
 	{ "1 – 0", "Build & nukes" },
 	{ "Q / E", "Attack share −/+" },
+	{ "R", "Attack stance: Normal / Blitz / Siege" },
 	{ "Space", "Attack at cursor" },
 	{ "Backspace", "Retreat your latest attack" },
 	{ "X / Right-click", "Cancel" },
@@ -476,6 +477,7 @@ function HelpOverlay._section(self, n: number, d: any)
 	v:add_child(tr)
 	local body = HelpOverlay._fill_rules(d.text)
 	if ctx.touch then
+		body = body:gsub(" %(R, or click it on the Attack bar%)", " (tap Sends beside the Attack bar)")
 		body = body:gsub("Right%-click", "Long-press"):gsub("Click", "Tap"):gsub("click", "tap")
 		body = body:gsub(" %(Q / E, or Shift %+ wheel%)", ""):gsub(" with the command bar %(1 – 7%)", " with BUILD")
 	end

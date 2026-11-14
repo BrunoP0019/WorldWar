@@ -113,6 +113,22 @@ Defs.UNLOCK_ALL = 127
 Defs.STRUCT_UNLOCK = { [0] = 0, 0, 0, 0, 0, 0, 8, 16, 32 }
 Defs.NUKE_UNLOCK = { [0] = 0, 0, 0, 0, 1, 2, 8, 16, 32 }
 
+-- Attack stances (Attack.stance; Rules.STANCE_LOSS / STANCE_TIME; an attack or boat intent's `kind`)
+Defs.STANCE_STANDARD = 0
+Defs.STANCE_BLITZ = 1
+Defs.STANCE_SIEGE = 2
+Defs.STANCE_NAMES = { [0] = "standard", "blitz", "siege" }
+Defs.STANCE_TITLES = { [0] = "Normal", "Blitz", "Siege" }
+--- The stance an intent's `kind` names (anything else: standard).
+function Defs.stance_from_name(name: any): number
+	if name == "blitz" then
+		return 1
+	elseif name == "siege" then
+		return 2
+	end
+	return 0
+end
+
 -- Tile flags (GameState.flags / delta "flags")
 Defs.F_FALLOUT = 1
 

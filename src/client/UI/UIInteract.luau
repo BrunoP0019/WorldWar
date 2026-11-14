@@ -1667,6 +1667,13 @@ function UIInteract._on_key(self: any, key: Enum.KeyCode, echo: boolean): boolea
 		end
 	elseif key == K.Backspace then
 		handled = ui:screen() == "play" and self.enabled and self:retreat_latest()
+	elseif key == K.R then
+		-- the Attack stance: standard, blitz, siege
+		if ui:screen() == "play" and self.enabled then
+			ctx:cycle_stance()
+		else
+			handled = false
+		end
 	elseif key == K.Q or key == K.E then
 		if ui:screen() == "play" and self.enabled then
 			ctx:step_ratio(if key == K.E then 1 else -1)
