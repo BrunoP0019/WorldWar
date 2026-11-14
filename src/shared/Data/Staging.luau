@@ -5,11 +5,13 @@
 local Staging = {}
 
 --- Rofront Staging's universe id.
-Staging.UNIVERSE = 10769439627
+--- 0: WorldWar has no staging experience yet (the original RoWorld's was 10769439627).
+Staging.UNIVERSE = 0
 
 --- True in the Rofront Staging experience.
 function Staging.here(): boolean
-	return typeof(game) == "Instance" and (game :: any).GameId == Staging.UNIVERSE
+	-- (an unpublished place has GameId 0 too: with no staging experience, nothing is staging)
+	return Staging.UNIVERSE ~= 0 and typeof(game) == "Instance" and (game :: any).GameId == Staging.UNIVERSE
 end
 
 return Staging

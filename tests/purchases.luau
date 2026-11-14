@@ -136,6 +136,9 @@ do
 		},
 	})
 	Purchases.load(B)
+	-- (test ids: the fork ships with no products of its own, every id 0)
+	Products.crate_first.id = 704
+	Products.crate.id = 705
 	expect(
 		Purchases.process_receipt({ PlayerId = 99, ProductId = Products.crate_first.id, PurchaseId = "c1" })
 			== "granted",
@@ -547,6 +550,7 @@ do
 	expect(distinct == 3 and rows.u64.credits.crate == 0, "three crates open to three different items")
 	Products.crate3.id = 0
 	-- and the 10-crate pack (2026-10-27): ten credits for one receipt
+	Products.crate10.id = 706
 	local kind10, n10 = Purchases.kind_of(Products.crate10.id)
 	expect(kind10 == "crate" and n10 == 10, "the 10-pack grants 10 crates")
 	expect(

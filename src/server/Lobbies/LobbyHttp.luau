@@ -37,7 +37,9 @@ LobbyHttp.RETRY_PRIMARY_S = 300
 --- Live servers use the service (MemoryStore stays the fallback). false = MemoryStore only.
 --- (On since 2026-09-28, once easy-1's firewall let port 3002 in; the service's LOBBIES switch turns it
 --- off without a publish.)
-LobbyHttp.ENABLED = true
+--- WorldWar: off. BASE_URL and FALLBACK_URL are the original RoWorld's own servers (Snick Co.), not
+--- ours; lobbies use MemoryStore. Turn it on only with a lobby service of our own at those URLs.
+LobbyHttp.ENABLED = false
 LobbyHttp.TIMEOUT_S = 5
 --- Transport failures in a row before the service counts as down.
 LobbyHttp.FAIL_THRESHOLD = 3

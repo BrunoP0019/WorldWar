@@ -24,7 +24,7 @@
 # cutting matches short, ask Roblox for a delayed restart (docs/fresh-servers.md): tools/restart_servers.sh 60
 set -u
 REPO="${0:A:h:h}"
-PLACE_ID=137151641329864
+PLACE_ID=0 # WorldWar: set to your place id (the original RoWorld root place was 137151641329864)
 STAGING=0
 if [[ "${1:-}" == "--staging" ]]; then
 	STAGING=1; shift

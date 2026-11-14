@@ -63,7 +63,9 @@ ServerMain.server = nil :: any
 ServerMain.MAX_MESSAGES_PER_SEC = 90
 --- The production experience (Rofront; build/publish.json). Other experiences running this code
 --- (Rofront Staging) stay off the services production shares.
-ServerMain.PROD_UNIVERSE = 10768172922
+--- WorldWar's production universe id (Creator Dashboard). 0 until the game is published: until then
+--- no server counts as production (the original RoWorld's was 10768172922).
+ServerMain.PROD_UNIVERSE = 0
 --- Team games and parties in production (docs/teams-and-parties.md; always on in Staging and Studio).
 ServerMain.TEAM_GAMES_LIVE = true
 --- SETTING messages per second per client (clients throttle each section to 2/s).
@@ -96,7 +98,7 @@ local function report_once(where: string, err: any)
 	end
 	reported[key] = true
 	reported_n += 1
-	warn(string.format("[RoWorldServer] %s failed: %s", where, text))
+	warn(string.format("[WorldWarServer] %s failed: %s", where, text))
 end
 
 local function core(name: string): any

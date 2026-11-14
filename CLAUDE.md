@@ -1,16 +1,28 @@
-# Rofront
+# WorldWar
 
-## Publish announcements (Discord)
+A Roblox territory-conquest game: a fork of lukechatton/roworld (itself a port of OpenFront), owned
+by Bruno. The goal of the fork is more engaging, more strategic mechanics.
 
-User (2026-10-15): "whenever you ship to prod or staging, start sending a message to our company discord ... a
-list/summary of the changes", narrowed the same day: "change publish discord message rule to only send when shipping
-to prod". So: **prod only**; a staging publish is not announced.
+## Working on it
 
-- Right after every successful publish / deploy to **prod**, post it with the shared script
-  (`~/.local/bin/snick-announce`, used by every Snick project):
-  `snick-announce --project "RoWorld" --target prod [--version vN] [--ref <commit>] --notes-file notes.md [--extra "Restart: ..."]`
-  (after `tools/publish.sh` succeeds without `--staging`). User (2026-10-25): "publish messages should use
-  "RoWorld" instead of "RoFront"" (the game's current name; posts up to v101 said Rofront).
-- Notes: one "- " line per change, in plain words for the team (what players / visitors notice), not commit messages.
-- The webhook lives in `~/.config/snick/discord_publish_webhook` (chmod 600): never print it, never commit it.
-- A failed post never undoes the publish: retry, or tell the user it wasn't announced.
+- Gameplay lives in `src/shared/Core/` (pure Luau, no Instances). Balance numbers go in `Rules.luau`,
+  never inline. The Sim is deterministic: use `self.rng`, never `math.random`.
+- The AI acts only through the same entry points players use (`intent_attack`, `launch_boat`,
+  `try_build`, ...). A new mechanic needs AI logic in `SimAI.luau` too, or the bots ignore it.
+- A new field on an attack, unit or event must reach the client: `Ev.luau`, the snapshot rows, and
+  `GameState.luau`. Rows without the field must still decode.
+- Tests: `.bin/lune run tests/<name>.luau` (Lune 0.10). Add a test for every mechanic. On the
+  original code `gameplayfixer_ui`, `simsys_structures` and `uiscreens_logic` already fail.
+- UI changes can't be checked by the tests: say so, and ask Bruno to try them in Studio.
+- Work on a branch per feature; Bruno merges.
+
+## Not ours
+
+- The game was set up for the original RoWorld experience. Product, subscription, universe and
+  place ids are zeroed (`Data/Products`, `Data/Subscription`, `Data/Staging`,
+  `ServerMain.PROD_UNIVERSE`, `tools/publish.*`) until Bruno creates his own.
+- `LobbyHttp` (the lobby service at rofront.snick.co) is Snick Co.'s server: keep it off.
+- DataStore and MemoryStore names (`RofrontPurchases_v1`, ...) keep the old name on purpose: they
+  are internal, and renaming one later loses saved data.
+- `tools/publish.sh` and other tools assume the original author's Mac setup; publish from Studio.
+- Licence: AGPL-3.0. Keep the OpenFront and Snick Co. notices in `HelpOverlay.LEGAL`.

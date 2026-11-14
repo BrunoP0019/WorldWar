@@ -258,15 +258,15 @@ HelpOverlay.SECTIONS = {
 --- and effects are RoWorld's own or public domain since that day, and the World map since 2026-10-26).
 --- NOTICE.md and LICENSE in the source have the full text.
 HelpOverlay.LEGAL = {
-	"RoWorld is a modified version of OpenFront. © OpenFront and Contributors. Changes © 2026 Snick Co.",
-	"RoWorld is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License, version 3, with the additional terms in its LICENSE file. It comes with ABSOLUTELY NO WARRANTY. The licence comes with RoWorld's source code.",
+	"WorldWar is a modified version of RoWorld, itself a modified version of OpenFront. © OpenFront and Contributors. RoWorld changes © 2026 Snick Co. WorldWar changes © 2026 Bruno.",
+	"WorldWar is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License, version 3, with the additional terms in its LICENSE file. It comes with ABSOLUTELY NO WARRANTY. The licence comes with WorldWar's source code.",
 	"Maps made with Natural Earth and NOAA ETOPO1 data (public domain). Country flags from Wikimedia Commons (public domain). Music by Rodrigo Flores.",
-	"RoWorld is not affiliated with or endorsed by OpenFront.",
+	"WorldWar is not affiliated with or endorsed by OpenFront or Snick Co.",
 }
 --- Where the source lives, under the credits: plain text with the GitHub mark, since Roblox games
---- can't link off-platform (2026-10-25: "Source <github logo> <repo>" at the bottom; the public repo is
---- lukechatton/roworld, lukechatton/rofront is private).
-HelpOverlay.SOURCE_REPO = "lukechatton/roworld"
+--- can't link off-platform (2026-10-25: "Source <github logo> <repo>" at the bottom). WorldWar's source
+--- is the BrunoP0019/WorldWar fork (of lukechatton/roworld): the AGPL asks that players can get it.
+HelpOverlay.SOURCE_REPO = "BrunoP0019/WorldWar"
 --- The card that pops up over the repo name when it's pressed (2026-10-25), and how long it stays.
 HelpOverlay.SOURCE_TIP = {
 	title = "Source code",
@@ -580,7 +580,7 @@ function HelpOverlay._legal(self)
 	return card
 end
 
---- "Source  [<GitHub mark> lukechatton/roworld]", centred below the credits card. Games can't open web
+--- "Source  [<GitHub mark> BrunoP0019/WorldWar]", centred below the credits card. Games can't open web
 --- links, so pressing the repo name pops up where to find it instead (SOURCE_TIP).
 function HelpOverlay._source(self)
 	local row = UITheme.hbox(4)

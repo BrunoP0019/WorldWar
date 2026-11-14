@@ -17,9 +17,11 @@ local Staging: any = if IS_ROBLOX then require((script :: any).Parent.Staging) e
 
 local Subscription = {}
 
-Subscription.ID = "EXP-6347955979564483083"
-Subscription.STAGING = "EXP-287838471589069369"
-Subscription.NAME = "RoWorld General"
+--- WorldWar has no subscription yet ("": nothing offers it). The original RoWorld's ids were
+--- EXP-6347955979564483083 (prod) and EXP-287838471589069369 (staging): they belong to that experience.
+Subscription.ID = ""
+Subscription.STAGING = ""
+Subscription.NAME = "WorldWar General"
 --- The price set on the dashboard (Robux a month); the interface shows Roblox's own.
 Subscription.ROBUX = 399
 Subscription.DAILY_STARS = 2500
